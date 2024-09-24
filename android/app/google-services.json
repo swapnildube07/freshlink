@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "810821731815",
+    "project_id": "fresh-1bb19",
+    "storage_bucket": "fresh-1bb19.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810821731815:android:e4d328337a97a6a844e942",
+        "android_client_info": {
+          "package_name": "com.swapnil.freshlink"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAF5KRZPnTUjPKjf_3M27BbJYw3g-M6I6w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
