@@ -45,7 +45,7 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Search',
           ),
           BottomNavigationBarItem(
-            icon: _buildIcon('assets/icons/categories.png', 2, isCategories: true), // Move this icon up
+            icon: _buildIcon('assets/icons/categories.png', 2),
             label: 'Categories',
           ),
           BottomNavigationBarItem(
@@ -64,11 +64,11 @@ class _MainScreenState extends State<MainScreen> {
     );
   }
 
-  Widget _buildIcon(String assetPath, int index, {bool isCategories = false}) {
+  Widget _buildIcon(String assetPath, int index) {
     return AnimatedPadding(
       duration: Duration(milliseconds: 200), // Animation duration
       padding: EdgeInsets.only(
-        top: isCategories ? 0.0 : (pageindex == index ? 0.0 : 20), // Categories icon stays up
+        top: (pageindex == index ? 0.0 : 10.0), // Uniform padding for all icons
       ),
       child: SizedBox(
         height: 24,
