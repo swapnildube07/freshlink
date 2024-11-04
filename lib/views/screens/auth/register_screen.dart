@@ -1,15 +1,10 @@
-// import 'dart:nativewrappers/_internal/vm/lib/typed_data_patch.dart';
 import 'dart:typed_data';
-
-import 'package:flutter/foundation.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:freshlink/controllers/auth_controller.dart';
 import 'package:freshlink/views/screens/auth/login_screen.dart';
 import 'package:get/get.dart';
 import 'package:image_picker/image_picker.dart';
-
-
 
 class RegisterScreen extends StatefulWidget {
   @override
@@ -18,268 +13,195 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   final AuthController _authController = AuthController();
-
   final GlobalKey<FormState> _formkey = GlobalKey<FormState>();
 
   bool _isLoading = false;
-
-  late String email;
-
-  late String FullName;
-
-  late String Password;
-
-  late String MobileNumber;
-
+  late String email, FullName, Password, MobileNumber;
   Uint8List? _image;
 
   selectGalleryImage() async {
     Uint8List Im = await _authController.pickProfileImage(ImageSource.gallery);
-
     setState(() {
       _image = Im;
     });
   }
 
-  captureImage() async {
-    await _authController.pickProfileImage(ImageSource.camera);
-  }
-
   registeruser() async {
-    if (_image != null) {
-      if (_formkey.currentState!.validate()) {
-        setState(() {
-          _isLoading = true;
-        });
-        String res = await _authController.createNewUser(
-            email, FullName, Password, MobileNumber, _image);
-        setState(() {
-          _isLoading = false;
-        });
-        if (res == 'Success') {
-          setState(() {
-            _isLoading = false;
-          });
-          Get.to(LoginScreen());
+    if (_image != null && _formkey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      String res = await _authController.createNewUser(
+          email, FullName, Password, MobileNumber, _image);
+      setState(() => _isLoading = false);
 
-          Get.snackbar(
-            'Success',
-            "Account  has been Created For You",
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
-        } else {
-          Get.snackbar('Error', res.toString(),
-              backgroundColor: Colors.red,
-              colorText: Colors.white,
-              snackPosition: SnackPosition.BOTTOM);
-        }
+      if (res == 'Success') {
+        Get.to(LoginScreen());
+        Get.snackbar('Success', "Account has been created for you",
+            backgroundColor: Colors.green, colorText: Colors.white);
       } else {
-        Get.snackbar('Form', "Form Filed is Not Valid");
+        Get.snackbar('Error', res.toString(),
+            backgroundColor: Colors.red, colorText: Colors.white);
       }
     } else {
-      Get.snackbar(
-        "No Image",
-        "Please Capture or select the image",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      Get.snackbar('Form', "Please complete all fields and upload an image");
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Form(
-      key: _formkey,
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                'Register Account',
-                style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 4),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              Stack(
-                children: [
-                  _image == null
-                      ? CircleAvatar(
-                          radius:
-                              80, // You can change the size by adjusting the radius
-                          backgroundImage: AssetImage(
-                              'assets/icons/farmer.png'), // Image from assets folder
-                        )
-                      : CircleAvatar(
-                          radius: 80,
-                          backgroundImage: MemoryImage(_image!),
+      body: Form(
+        key: _formkey,
+        child: Center(
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Register Account',
+                  style: TextStyle(
+                      fontSize: 22, fontWeight: FontWeight.bold, letterSpacing: 4),
+                ),
+                SizedBox(height: 20),
+                Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 80,
+                      backgroundImage: _image != null
+                          ? MemoryImage(_image!)
+                          : AssetImage('assets/icons/farmer.png')
+                      as ImageProvider,
+                    ),
+                    Positioned(
+                      right: 0,
+                      top: 15,
+                      child: IconButton(
+                        onPressed: selectGalleryImage,
+                        icon: Icon(CupertinoIcons.photo),
+                      ),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
+
+                // Full Name Field
+                buildRoundedTextField(
+                    labelText: 'Full Name',
+                    hintText: 'Enter Full Name',
+                    icon: Icons.person,
+                    onChanged: (value) => FullName = value,
+                    validator: (value) => value!.isEmpty
+                        ? "Please enter your full name"
+                        : null),
+
+                SizedBox(height: 20),
+
+                // Email Field
+                buildRoundedTextField(
+                    labelText: 'Email Address',
+                    hintText: 'Enter Mail Address',
+                    icon: Icons.email,
+                    onChanged: (value) => email = value,
+                    validator: (value) =>
+                    value!.isEmpty ? "Please enter your email" : null),
+
+                SizedBox(height: 20),
+
+                // Password Field
+                buildRoundedTextField(
+                    labelText: 'Password',
+                    hintText: 'Set Password',
+                    icon: Icons.lock,
+                    obscureText: true,
+                    onChanged: (value) => Password = value,
+                    validator: (value) =>
+                    value!.isEmpty ? "Please set the password" : null),
+
+                SizedBox(height: 20),
+
+                // Mobile Number Field
+                buildRoundedTextField(
+                    labelText: 'Mobile Number',
+                    hintText: 'Enter Your Mobile Number',
+                    icon: Icons.phone,
+                    keyboardType: TextInputType.phone,
+                    onChanged: (value) => MobileNumber = value,
+                    validator: (value) =>
+                    value!.isEmpty ? "Please enter your mobile number" : null),
+
+                SizedBox(height: 30),
+
+                // Register Button with Rounded Corners
+                InkWell(
+                  onTap: registeruser,
+                  child: Container(
+                    height: 50,
+                    width: MediaQuery.of(context).size.width - 40,
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(30), // Rounded corners
+                    ),
+                    child: Center(
+                      child: _isLoading
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                        'Register',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 4,
                         ),
-                  Positioned(
-                    right: 0,
-                    top: 15,
-                    child: IconButton(
-                      onPressed: () {
-                        selectGalleryImage();
-                      },
-                      icon: Icon(CupertinoIcons.photo),
+                      ),
                     ),
                   ),
-                ],
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                onChanged: (value) {
-                  email = value;
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return 'Please enter your email address.';
-                  } else {
-                    return null;
-                  }
-                },
-                decoration: InputDecoration(
-                  labelText: 'Email Address',
-                  hintText: 'Enter Mail Address',
-                  prefixIcon: Icon(
-                    Icons.email,
-                    color: Colors.green,
-                  ),
-                  border: OutlineInputBorder(),
                 ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                onChanged: (value) {
-                  FullName = value;
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return "Please enter your full name";
-                  } else {
-                    return null;
-                  }
-                },
-                decoration: InputDecoration(
-                  labelText: 'Full Name',
-                  hintText: 'Enter Full Name',
-                  prefixIcon: Icon(
-                    Icons.person,
-                    color: Colors.green,
-                  ),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                onChanged: (value) {
-                  Password = value;
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return "Please Set the Password.";
-                  } else {
-                    return null;
-                  }
-                },
-                decoration: InputDecoration(
-                  labelText: 'Password',
-                  hintText: 'Set Password',
-                  prefixIcon: Icon(
-                    Icons.lock,
-                    color: Colors.green,
-                  ),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              TextFormField(
-                onChanged: (value) {
-                  MobileNumber = value;
-                },
-                validator: (value) {
-                  if (value!.isEmpty) {
-                    return "Please enter your MobileNumber.";
-                  } else {
-                    return null;
-                  }
-                },
-                decoration: InputDecoration(
-                  labelText: 'Mobile Number',
-                  hintText: 'Enter Your Mobile Number',
-                  prefixIcon: Icon(
-                    Icons.phone,
-                    color: Colors.green,
-                  ),
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              SizedBox(
-                height: 20,
-              ),
-              InkWell(
-                onTap: () {
-                  registeruser();
-                },
-                child: Container(
-                  height: 50,
-                  width: MediaQuery.of(context).size.width - 40,
-                  decoration: BoxDecoration(
-                    color: Colors.green,
-                    borderRadius: BorderRadius.circular(
-                      8,
-                    ),
-                  ),
-                  child: Center(
-                    child: _isLoading
-                        ? CircularProgressIndicator(
-                            color: Colors.white,
-                          )
-                        : Text(
-                            'Register',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                              letterSpacing: 4,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
-              SizedBox(height: 20),
-              TextButton(
-                onPressed: () {
-                  Navigator.push(
+                SizedBox(height: 20),
+                TextButton(
+                  onPressed: () => Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (context) {
-                        return LoginScreen();
-                      },
-                    ),
-                  );
-                },
-                child: Text('Already Have An Account?'),
-              ),
-            ],
+                    MaterialPageRoute(builder: (context) => LoginScreen()),
+                  ),
+                  child: Text('Already Have An Account?'),
+                ),
+              ],
+            ),
           ),
         ),
       ),
-    ));
+    );
+  }
+
+  // Helper method to create rounded text fields
+  Widget buildRoundedTextField(
+      {required String labelText,
+        required String hintText,
+        required IconData icon,
+        bool obscureText = false,
+        TextInputType keyboardType = TextInputType.text,
+        required Function(String) onChanged,
+        required String? Function(String?) validator}) {
+    return TextFormField(
+      onChanged: onChanged,
+      validator: validator,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: labelText,
+        hintText: hintText,
+        prefixIcon: Icon(icon, color: Colors.green),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.green),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.green),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(30),
+          borderSide: BorderSide(color: Colors.green, width: 2.0),
+        ),
+      ),
+    );
   }
 }
