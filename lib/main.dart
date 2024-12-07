@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freshlink/views/screens/auth/login_screen.dart';
 import 'package:freshlink/views/screens/main_screen.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -18,7 +19,7 @@ void main() async {
   )
       : await Firebase.initializeApp();
 
-  runApp(const MyApp());
+  runApp(ProviderScope(child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

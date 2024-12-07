@@ -1,24 +1,35 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freshlink/models/cart_models.dart';
+import 'package:freshlink/models/provider/cart_provider.dart';
+//import 'package:freshlink/views/screens/inner_screen/checkout_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class ProductDetailsScreen extends StatefulWidget {
+import '../screens/Cart_Screen.dart';
+
+class ProductDetailsScreen extends ConsumerStatefulWidget {
   final dynamic productData;
+
   const ProductDetailsScreen({super.key, required this.productData});
 
   @override
-  State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
+  _ProductDetailsScreenState createState() => _ProductDetailsScreenState();
 }
 
-class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
+class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
   int _currentImageIndex = 0;
-  int _selectedQuantity = 1;
-  String _selectedUnit = "Kg";
+  int _selectedQuantity = 1;  // Set default value to 1
   bool _isAddedToCart = false;
 
   @override
   Widget build(BuildContext context) {
+    final _cartProvider = ref.read(cartProvider.notifier);
+    final _cartItem = ref.watch(cartProvider);
+
+    // Ensure that the productData contains a valid productId
+    final isInCart = _cartItem.containsKey(widget.productData['productId']);
     final productData = widget.productData;
 
     return Scaffold(
@@ -35,7 +46,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Product Description Section
             Text(
               productData['productName'] ?? '',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -114,21 +124,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                       onChanged: (value) {
                         setState(() {
                           _selectedQuantity = value!;
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 10),
-                    DropdownButton<String>(
-                      value: _selectedUnit,
-                      items: ["Kg", "Litre"].map((unit) {
-                        return DropdownMenuItem(
-                          value: unit,
-                          child: Text(unit),
-                        );
-                      }).toList(),
-                      onChanged: (value) {
-                        setState(() {
-                          _selectedUnit = value!;
                         });
                       },
                     ),
@@ -225,19 +220,6 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
                   const SizedBox(height: 8),
                   Row(
                     children: [
-                      const Icon(FontAwesomeIcons.boxOpen, color: Colors.green, size: 18),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          "Packaging Type: ${productData['PackagingType']}",
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
                       const Icon(FontAwesomeIcons.layerGroup, color: Colors.blue, size: 18),
                       const SizedBox(width: 10),
                       Expanded(
@@ -255,62 +237,86 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
         ),
       ),
       // Bottom Navigation Bar with Add to Cart and Buy Now buttons
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: ElevatedButton.icon(
+      bottomNavigationBar: BottomAppBar(
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton(
                 onPressed: () {
-                  if (_isAddedToCart) {
-                    Navigator.pushNamed(context, '/cart');
+                  if (isInCart) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const CartScreen(),
+                      ),
+                    );
                   } else {
+                    print("Farmer ID: ${productData['farmerID']}");
+                    _cartProvider.addProductToCart(
+                      productData['productName'],
+                      productData['productId'],
+                      productData['ImageUrlList'],
+                      _selectedQuantity,
+                      productData['productPrice'],
+                    //  productData['PackagingType'],
+                      productData['farmerID']
+                    );
+                    if (productData.containsKey('farmerID')) {
+                      print("Farmer ID: ${productData['farmerID']}");
+                    } else {
+                      print("farmerID not found in productData");
+                    }
+
+
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text("Product added to cart!"),
+                      ),
+                    );
                     setState(() {
                       _isAddedToCart = true;
                     });
-                    // Add to cart logic
                   }
                 },
-                icon: Icon(
-                  _isAddedToCart ? FontAwesomeIcons.shoppingCart : FontAwesomeIcons.cartPlus,
-                  color: Colors.white,
-                ),
-                label: Text(_isAddedToCart ? "Go to Cart" : "Add to Cart"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.lightGreen,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  backgroundColor: isInCart ? Colors.green : Colors.deepPurple,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: Text(
+                  isInCart ? 'Go to Cart' : 'Add to Cart',
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: ElevatedButton.icon(
+              ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, '/checkout');
+                  // Navigator.push(
+                  //   context,
+                  //   MaterialPageRoute(
+                  //     builder: (context) => CheckoutScreen(),
+                  //   ),
+                  // );
                 },
-                icon: const Icon(FontAwesomeIcons.creditCard, color: Colors.white),
-                label: const Text("Buy Now"),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.deepPurple,
-                  padding: const EdgeInsets.symmetric(vertical: 15),
-                  textStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  backgroundColor: Colors.orange,
+                  padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Buy Now',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      // Floating Chat Button
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          // Code to open chat goes here
-        },
-        backgroundColor: Colors.blue,
-        child: const Icon(Icons.chat, color: Colors.white),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
     );
   }
 }
