@@ -18,7 +18,6 @@ class _MainScreenState extends State<MainScreen> {
 
   List<Widget> _pages = [
     HomeScreen(),
-    SearchScreen(),
     CategoriesScreen(),
     CartScreen(),
     AccountScreen()
@@ -40,10 +39,7 @@ class _MainScreenState extends State<MainScreen> {
             icon: _buildIcon('assets/icons/store.png', 0),
             label: 'Home',
           ),
-          BottomNavigationBarItem(
-            icon: _buildIcon('assets/icons/search.png', 1),
-            label: 'Search',
-          ),
+
           BottomNavigationBarItem(
             icon: _buildIcon('assets/icons/categories.png', 2),
             label: 'Categories',
@@ -57,7 +53,7 @@ class _MainScreenState extends State<MainScreen> {
             label: 'Account',
           ),
         ],
-        selectedItemColor: Colors.green, // Adjust the color of selected items
+        selectedItemColor: Colors.green.shade500, // Adjust the color of selected items
         unselectedItemColor: Colors.grey, // Color for unselected items
       ),
       body: _pages[pageindex],

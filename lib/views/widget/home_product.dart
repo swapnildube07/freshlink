@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:freshlink/views/widget/product_details.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'dart:async';
-import 'dart:math';
 
 class HomeProductWidget extends StatefulWidget {
   const HomeProductWidget({super.key});
@@ -18,7 +17,6 @@ class _HomeProductWidgetState extends State<HomeProductWidget> {
   final PageController _pageController = PageController(viewportFraction: 0.9);
   int _currentPage = 0;
   late Timer _timer;
-  var _randomProduct;
 
   @override
   void initState() {
@@ -45,6 +43,79 @@ class _HomeProductWidgetState extends State<HomeProductWidget> {
     super.dispose();
   }
 
+  // Helper method for building product grid
+  Widget buildProductGrid(List<QueryDocumentSnapshot> products) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: products.length,
+      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 2,
+        crossAxisSpacing: 8,
+        mainAxisSpacing: 8,
+        childAspectRatio: 1,
+      ),
+      itemBuilder: (context, index) {
+        final productData = products[index];
+        return GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductDetailsScreen(
+                  productData: productData,
+                ),
+              ),
+            );
+          },
+          child: Container(
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black12,
+                  blurRadius: 8,
+                  offset: const Offset(2, 4),
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    productData['ImageUrlList'][0],
+                    height: 80,
+                    fit: BoxFit.cover,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  productData['productName'],
+                  style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  "'₹${productData['productPrice'].toStringAsFixed(2)}",
+                  style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.black54),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
@@ -56,18 +127,29 @@ class _HomeProductWidgetState extends State<HomeProductWidget> {
         }
 
         final products = snapshot.data!.docs;
-        if (_randomProduct == null) {
-          _randomProduct = products[Random().nextInt(products.length)];
-        }
 
+        // Fetch the latest 4 products and fixed 4 products
         final latestProducts = products.take(4).toList();
         final fixedProducts = products.skip(4).take(4).toList();
+        final remainingProducts = products.skip(8).toList(); // Remaining after the top 8
 
         return Container(
-          color: Colors.white,
+          color: Colors.green.shade50, // Subtle light green background
           padding: const EdgeInsets.symmetric(horizontal: 8.0),
           child: Column(
             children: [
+              // Header for the product section
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Latest Products',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
               // Scrolling Product Banner Section
               SizedBox(
                 height: 180,
@@ -129,7 +211,7 @@ class _HomeProductWidgetState extends State<HomeProductWidget> {
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          "\$${productData['productPrice'].toStringAsFixed(2)}",
+                                          "'₹${productData['productPrice'].toStringAsFixed(2)}",
                                           style: const TextStyle(
                                               fontSize: 14,
                                               fontWeight: FontWeight.w500,
@@ -167,75 +249,25 @@ class _HomeProductWidgetState extends State<HomeProductWidget> {
               const SizedBox(height: 20),
 
               // Fixed Product Grid Section
-              GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: fixedProducts.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  crossAxisSpacing: 8,
-                  mainAxisSpacing: 8,
-                  childAspectRatio: 1,
-                ),
-                itemBuilder: (context, index) {
-                  final productData = fixedProducts[index];
-                  return GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => ProductDetailsScreen(
-                            productData: productData,
-                          ),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(8.0),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 8,
-                            offset: const Offset(2, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          ClipRRect(
-                            borderRadius: BorderRadius.circular(8),
-                            child: Image.network(
-                              productData['ImageUrlList'][0],
-                              height: 80,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            productData['productName'],
-                            style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "\$${productData['productPrice'].toStringAsFixed(2)}",
-                            style: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w500,
-                                color: Colors.black54),
-                          ),
-                        ],
+              buildProductGrid(fixedProducts),
+
+              // Remaining Products Section
+              const SizedBox(height: 20),
+              if (remainingProducts.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Other Products',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  );
-                },
-              ),
+                  ),
+                ),
+              // Show only 4 products from the remaining list
+              buildProductGrid(remainingProducts.take(4).toList()),
             ],
           ),
         );

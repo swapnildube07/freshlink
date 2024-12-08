@@ -1,9 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freshlink/models/cart_models.dart';
 import 'package:freshlink/models/provider/cart_provider.dart';
-//import 'package:freshlink/views/screens/inner_screen/checkout_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
@@ -34,11 +32,11 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          productData['productName'],
-          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        title: const Text(
+          'AgriConnect',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
         ),
-        backgroundColor: Colors.deepPurple,
+        backgroundColor: Colors.green, // Set to match banner color
         elevation: 0,
       ),
       body: SingleChildScrollView(
@@ -46,6 +44,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Title and Description
             Text(
               productData['productName'] ?? '',
               style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -101,7 +100,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                     const Icon(FontAwesomeIcons.tag, color: Colors.green, size: 20),
                     const SizedBox(width: 8),
                     Text(
-                      "\$${productData['productPrice']}",
+                      "₹${productData['productPrice']}",
                       style: const TextStyle(
                         fontSize: 22,
                         fontWeight: FontWeight.bold,
@@ -133,12 +132,12 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Shipping and Delivery Information Box
+            // Shipping and Delivery Information Box with new background color
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.green.shade50,  // Set background color to match home screen
                 borderRadius: BorderRadius.circular(12.0),
                 boxShadow: [
                   BoxShadow(
@@ -158,7 +157,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                       const Icon(FontAwesomeIcons.truck, color: Colors.deepPurple, size: 20),
                       const SizedBox(width: 10),
                       Text(
-                        "Shipping Charge: \$${productData['ShippingCharge']}",
+                        "Shipping Charge: ₹${productData['ShippingCharge']}",
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
@@ -179,12 +178,12 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
             ),
             const SizedBox(height: 20),
 
-            // Highlights Section
+            // Highlights Section with new background color
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.green.shade50,  // Set background color to match home screen
                 borderRadius: BorderRadius.circular(12.0),
                 boxShadow: [
                   BoxShadow(
@@ -260,15 +259,8 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                       productData['ImageUrlList'],
                       _selectedQuantity,
                       productData['productPrice'],
-                    //  productData['PackagingType'],
-                      productData['farmerID']
+                      productData['farmerID'],
                     );
-                    if (productData.containsKey('farmerID')) {
-                      print("Farmer ID: ${productData['farmerID']}");
-                    } else {
-                      print("farmerID not found in productData");
-                    }
-
 
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -281,7 +273,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: isInCart ? Colors.green : Colors.deepPurple,
+                  backgroundColor: isInCart ? Colors.lightGreen : Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -289,20 +281,13 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 ),
                 child: Text(
                   isInCart ? 'Go to Cart' : 'Add to Cart',
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 16),
                 ),
               ),
               ElevatedButton(
-                onPressed: () {
-                  // Navigator.push(
-                  //   context,
-                  //   MaterialPageRoute(
-                  //     builder: (context) => CheckoutScreen(),
-                  //   ),
-                  // );
-                },
+                onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
+                  backgroundColor: Colors.lightGreen,
                   padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -310,7 +295,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
                 ),
                 child: const Text(
                   'Buy Now',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 16),
                 ),
               ),
             ],

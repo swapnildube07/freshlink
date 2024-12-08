@@ -22,9 +22,11 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
+
           ),
         ),
         centerTitle: true,
+        backgroundColor: Colors.green.shade500,
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: _categoriesStream,

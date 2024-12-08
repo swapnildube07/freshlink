@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freshlink/models/provider/cart_provider.dart';
 import 'package:freshlink/views/screens/inner_screen/payment_Screen.dart';
 
-import 'inner_screen/checkout_screen.dart';
-
 class CartScreen extends ConsumerStatefulWidget {
   const CartScreen({super.key});
 
@@ -34,7 +32,9 @@ class _CartScreenState extends ConsumerState<CartScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Your Cart'),
+          centerTitle: true,
+
+        title: const Text('Your Cart',style: TextStyle( fontWeight: FontWeight.bold),),
         backgroundColor: Colors.green,
         actions: [
           IconButton(
@@ -56,7 +56,8 @@ class _CartScreenState extends ConsumerState<CartScreen> {
           style: TextStyle(fontSize: 18, color: Colors.grey),
         ),
       )
-          : Padding(
+          : Container(
+        color: Colors.grey[200], // Matching background color with panel
         padding: const EdgeInsets.all(8.0),
         child: Column(
           children: [
@@ -145,8 +146,11 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       ElevatedButton(
                                         onPressed: () {
                                           // Handle "Buy Now"
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("Proceeding to Buy Now")),
+                                          Navigator.push(
+                                            context,
+                                            MaterialPageRoute(
+                                              builder: (context) => const PaymentScreen(),
+                                            ),
                                           );
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -157,10 +161,34 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                                       ),
                                       ElevatedButton(
                                         onPressed: () {
-                                          // Remove the item from the cart
-                                          cartNotifier.removeItem(cartItem as String);
-                                          ScaffoldMessenger.of(context).showSnackBar(
-                                            const SnackBar(content: Text("Item removed from cart")),
+                                          // Show confirmation before removing the item
+                                          showDialog(
+                                            context: context,
+                                            builder: (context) => AlertDialog(
+                                              title: const Text('Remove Item'),
+                                              content: const Text(
+                                                  'Are you sure you want to remove this item from the cart?'),
+                                              actions: [
+                                                TextButton(
+                                                  onPressed: () {
+                                                    // Close the dialog without removing the item
+                                                    Navigator.of(context).pop();
+                                                  },
+                                                  child: const Text('Cancel'),
+                                                ),
+                                                TextButton(
+                                                  onPressed: () {
+                                                    // Remove the item from the cart
+                                                    cartNotifier.removeItem(cartItem.productId);
+                                                    ScaffoldMessenger.of(context).showSnackBar(
+                                                      const SnackBar(content: Text("Item removed from cart")),
+                                                    );
+                                                    Navigator.of(context).pop(); // Close the dialog
+                                                  },
+                                                  child: const Text('Yes'),
+                                                ),
+                                              ],
+                                            ),
                                           );
                                         },
                                         style: ElevatedButton.styleFrom(
@@ -186,7 +214,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.grey[200],
+                color: Colors.grey[200], // Same as background color
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Column(
@@ -214,7 +242,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
             const SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-         //       Navigate to the CheckoutScreen when the button is pressed
+                // Navigate to the CheckoutScreen when the button is pressed
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -230,8 +258,7 @@ class _CartScreenState extends ConsumerState<CartScreen> {
                 "Proceed to Checkout",
                 style: TextStyle(fontSize: 18),
               ),
-            )
-
+            ),
           ],
         ),
       ),

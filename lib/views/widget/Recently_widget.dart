@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
-import '../screens/inner_screen/Product.dart';
-import '../screens/inner_screen/recently_visited_service.dart';
+import '../screens/inner_screen/Product.dart';  // Make sure this import is correct for your Product model.
+import '../screens/inner_screen/recently_visited_service.dart';  // Make sure this import is correct for your service.
 
-class RecentlyScreen extends StatelessWidget {
+class RecentlyScreen extends StatefulWidget {
+  @override
+  State<RecentlyScreen> createState() => _RecentlyScreenState();
+}
+
+class _RecentlyScreenState extends State<RecentlyScreen> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Product>>(
       future: RecentlyVisitedService.getRecentlyVisitedProducts(),
       builder: (context, snapshot) {
-        // Handling loading state
+        // Handle loading state
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Handling error state
+        // Handle error state
         else if (snapshot.hasError) {
           return const Center(child: Text("Error loading recently viewed products"));
         }
 
-        // Handling no data or empty list
+        // Handle empty data state
         else if (!snapshot.hasData || snapshot.data!.isEmpty) {
           return const Center(child: Text("No recently viewed products"));
         }
@@ -26,7 +31,7 @@ class RecentlyScreen extends StatelessWidget {
         // Fetched products
         final products = snapshot.data!;
 
-        // Debugging statement to check the fetched data
+        // Debugging statement to check fetched products
         print("Fetched products: ${products.length}");
 
         return Column(
@@ -39,8 +44,7 @@ class RecentlyScreen extends StatelessWidget {
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            SizedBox(
-              height: 120, // Adjust height as needed
+            Expanded( // Replaced SizedBox with Expanded to adapt to dynamic content
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 itemCount: products.length,
@@ -57,7 +61,7 @@ class RecentlyScreen extends StatelessWidget {
                       children: [
                         product.imageUrlList.isNotEmpty
                             ? Image.network(
-                          product.imageUrlList[0],
+                          product.imageUrlList[0], // Assuming imageUrlList is a List of URLs
                           width: 80,
                           height: 80,
                           errorBuilder: (context, error, stackTrace) {
@@ -69,7 +73,7 @@ class RecentlyScreen extends StatelessWidget {
                           },
                         )
                             : Image.asset(
-                          'assets/placeholder_image.png',
+                          'assets/placeholder_image.png', // Fallback image
                           width: 80,
                           height: 80,
                         ),

@@ -2,6 +2,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:freshlink/views/screens/Cart_Screen.dart';
+import 'package:freshlink/views/screens/inner_screen/customerorder_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:freshlink/views/screens/auth/login_screen.dart';
@@ -30,10 +32,11 @@ class _AccountScreenState extends State<AccountScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
+        backgroundColor: Colors.green.shade600,
         title: Text(
           'Profile',
           style: TextStyle(
-            fontSize: 22,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             letterSpacing: 1.5,
           ),
@@ -43,7 +46,7 @@ class _AccountScreenState extends State<AccountScreen> {
             padding: const EdgeInsets.all(8.0),
             child: Icon(
               Icons.sunny_snowing,
-              color: Colors.green,
+              color: Colors.white,
             ),
           ),
         ],
@@ -81,15 +84,16 @@ class _AccountScreenState extends State<AccountScreen> {
                               : NetworkImage(profileImageUrl ?? ''), // Show current image
                         ),
                       ),
-                      SizedBox(height: 10),
+                      SizedBox(height: 15),
                       Text(
                         fullName ?? '',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
+                          color: Colors.green.shade700,
                         ),
                       ),
-                      SizedBox(height: 5),
+                      SizedBox(height: 8),
                       Text(
                         email ?? '',
                         style: TextStyle(
@@ -102,7 +106,7 @@ class _AccountScreenState extends State<AccountScreen> {
                       if (_selectedImage != null) // Show Save button if an image is selected
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: Colors.green.shade700,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -122,7 +126,7 @@ class _AccountScreenState extends State<AccountScreen> {
                         width: 200,
                         child: ElevatedButton(
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green,
+                            backgroundColor: Colors.green.shade700,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
                             ),
@@ -142,8 +146,12 @@ class _AccountScreenState extends State<AccountScreen> {
                       _buildListTile(Icons.phone, "Phone", () {
                         _showEditPhoneDialog(mobileNumber ?? "");
                       }, subtitle: mobileNumber),
-                      _buildListTile(Icons.shopping_cart, "Cart", () {}),
-                      _buildListTile(Icons.shopping_bag, "Order", () {}),
+                      _buildListTile(Icons.shopping_cart, "Cart", () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => CartScreen()));
+                      }),
+                      _buildListTile(Icons.shopping_bag, "Order", () {
+                        Navigator.of(context).push(MaterialPageRoute(builder: (context) => CustomerOrderScreen()));
+                      }),
                       _buildListTile(Icons.logout, "Logout", () async {
                         _showLogoutConfirmationDialog(context);
                       }),
@@ -179,10 +187,10 @@ class _AccountScreenState extends State<AccountScreen> {
           ],
         ),
         child: ListTile(
-          leading: Icon(icon, color: Colors.green),
+          leading: Icon(icon, color: Colors.green.shade700),
           title: Text(
             title,
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.green.shade700),
           ),
           subtitle: subtitle != null ? Text(subtitle) : null,
         ),
@@ -302,40 +310,9 @@ class _AccountScreenState extends State<AccountScreen> {
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
       setState(() {
-        _selectedImage = File(image.path); // Update selected image
+        _selectedImage = File(image.path);
       });
     }
-  }
-
-  Future<void> _uploadProfileImage(File image) async {
-    setState(() {
-      _isLoading = true; // Start loading
-    });
-    try {
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      Reference storageRef = FirebaseStorage.instance.ref().child('profile_images/$fileName');
-      await storageRef.putFile(image);
-      String downloadUrl = await storageRef.getDownloadURL();
-
-      // Update Firestore with the new profile image URL
-      await _updateField('profileImage', downloadUrl);
-      setState(() {
-        profileImageUrl = downloadUrl; // Update profile image URL
-        _selectedImage = null; // Reset selected image
-      });
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Profile image updated successfully!')));
-    } catch (e) {
-      print(e);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error updating profile image!')));
-    } finally {
-      setState(() {
-        _isLoading = false; // Stop loading
-      });
-    }
-  }
-
-  Future<void> _updateField(String field, String value) async {
-    await FirebaseFirestore.instance.collection('buyers').doc(widget._auth.currentUser!.uid).update({field: value});
   }
 
   void _showProfileImage() {
@@ -343,17 +320,42 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Profile Image'),
-          content: Image.network(profileImageUrl ?? ''),
-          actions: <Widget>[
-            TextButton(
-              child: Text('Close'),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
+          content: Image.file(_selectedImage!),
         );
       },
     );
+  }
+
+  Future<void> _updateField(String field, String newValue) async {
+    try {
+      await FirebaseFirestore.instance.collection('buyers').doc(widget._auth.currentUser!.uid).update({field: newValue});
+    } catch (e) {
+      print("Error updating field: $e");
+    }
+  }
+
+  Future<void> _uploadProfileImage(File image) async {
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+
+      String imageName = widget._auth.currentUser!.uid + '_profile_image';
+      Reference storageRef = FirebaseStorage.instance.ref().child('profile_images').child(imageName);
+      await storageRef.putFile(image);
+      String imageUrl = await storageRef.getDownloadURL();
+
+      // Update Firestore with the new profile image URL
+      await FirebaseFirestore.instance.collection('buyers').doc(widget._auth.currentUser!.uid).update({'profileImage': imageUrl});
+
+      setState(() {
+        profileImageUrl = imageUrl;
+        _isLoading = false;
+      });
+      print('Profile image updated successfully!');
+    } catch (e) {
+      print("Error uploading image: $e");
+    }
   }
 
   void _showLogoutConfirmationDialog(BuildContext context) {
@@ -361,8 +363,8 @@ class _AccountScreenState extends State<AccountScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Confirm Logout'),
-          content: Text('Are you sure you want to log out?'),
+          title: Text('Logout'),
+          content: Text('Are you sure you want to logout?'),
           actions: <Widget>[
             TextButton(
               child: Text('Cancel'),
@@ -371,8 +373,11 @@ class _AccountScreenState extends State<AccountScreen> {
             TextButton(
               child: Text('Logout'),
               onPressed: () async {
-                await widget._auth.signOut();
-                Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (context) => LoginScreen()));
+                await FirebaseAuth.instance.signOut();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (context) => LoginScreen()),
+                );
               },
             ),
           ],

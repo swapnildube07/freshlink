@@ -4,6 +4,7 @@ import 'package:freshlink/views/widget/banner_widget.dart';
 import 'package:freshlink/views/widget/category_text_widget.dart';
 import 'package:freshlink/views/widget/home_product.dart';
 import 'package:freshlink/views/widget/location_widget.dart';
+import 'package:freshlink/views/widget/search_widget.dart'; // Import search widget
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -13,7 +14,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  // Simulating a delay to represent loading data
   Future<void> loadData() async {
     await Future.delayed(Duration(seconds: 2)); // Adjust delay as needed
   }
@@ -23,30 +23,30 @@ class _HomeScreenState extends State<HomeScreen> {
     return FutureBuilder(
       future: loadData(),
       builder: (context, snapshot) {
-        // While waiting for data to load, show loading indicator
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return Scaffold(
+          return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
             ),
           );
         }
 
-        // Once data is loaded, show main content
         return Scaffold(
           body: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                LocationWidget(),
-                SizedBox(height: 10),
-                BannerWidget(),
-                SizedBox(height: 10),
-                CategoryTextWidget(),
-                SizedBox(height: 10),
-                HomeProductWidget(),
-                SizedBox(height: 10),
-                RecentlyScreen(),
+                const LocationWidget(), // Location widget at the top
+                const SizedBox(height: 10),
+              //  const SearchWidget(), // Your new search widget here
+                const SizedBox(height: 10),
+                const BannerWidget(), // Banner below search bar
+                const SizedBox(height: 10),
+                const CategoryTextWidget(),
+                const SizedBox(height: 10),
+                const HomeProductWidget(),
+                const SizedBox(height: 10),
+           ///     RecentlyScreen(),
               ],
             ),
           ),

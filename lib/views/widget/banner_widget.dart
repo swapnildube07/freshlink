@@ -59,68 +59,78 @@ class _BannerWidgetState extends State<BannerWidget> {
         ? const Center(child: CircularProgressIndicator())
         : _bannerList.isEmpty
         ? const Center(child: Text("No banners available"))
-        : Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // Carousel Slider with updated height and styling
-        CarouselSlider(
-          items: _bannerList.map((e) {
-            return Builder(builder: (context) {
-              return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 5),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black26,
-                      blurRadius: 4,
-                      offset: Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
-                  child: Image.network(
-                    e,
-                    fit: BoxFit.cover,
-                    width: MediaQuery.of(context).size.width * 0.9,
+        : Container(
+      // Set background color and gradient
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.green.shade50, Colors.green.shade200],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Carousel Slider with updated height and styling
+          CarouselSlider(
+            items: _bannerList.map((e) {
+              return Builder(builder: (context) {
+                return Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 5),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black26,
+                        blurRadius: 4,
+                        offset: Offset(0, 2),
+                      ),
+                    ],
                   ),
-                ),
-              );
-            });
-          }).toList(),
-          options: CarouselOptions(
-            height: 200, // Adjusted height to make it smaller
-            aspectRatio: 16 / 9,
-            viewportFraction: 0.9,
-            initialPage: 0,
-            enableInfiniteScroll: true,
-            autoPlay: true,
-            autoPlayInterval: const Duration(seconds: 3),
-            autoPlayAnimationDuration: const Duration(milliseconds: 800),
-            autoPlayCurve: Curves.fastOutSlowIn,
-            enlargeCenterPage: true,
-            onPageChanged: (index, reason) {
-              setState(() {
-                _currentBannerIndex = index; // Update current banner index
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      e,
+                      fit: BoxFit.cover,
+                      width: MediaQuery.of(context).size.width * 0.9,
+                    ),
+                  ),
+                );
               });
-            },
+            }).toList(),
+            options: CarouselOptions(
+              height: 200, // Adjusted height to make it smaller
+              aspectRatio: 16 / 9,
+              viewportFraction: 0.9,
+              initialPage: 0,
+              enableInfiniteScroll: true,
+              autoPlay: true,
+              autoPlayInterval: const Duration(seconds: 3),
+              autoPlayAnimationDuration: const Duration(milliseconds: 800),
+              autoPlayCurve: Curves.fastOutSlowIn,
+              enlargeCenterPage: true,
+              onPageChanged: (index, reason) {
+                setState(() {
+                  _currentBannerIndex = index; // Update current banner index
+                });
+              },
+            ),
           ),
-        ),
-        const SizedBox(height: 10), // Space between banner and indicators
+          const SizedBox(height: 10), // Space between banner and indicators
 
-        // Dot Indicators below the banner
-        AnimatedSmoothIndicator(
-          activeIndex: _currentBannerIndex,
-          count: _bannerList.length,
-          effect: WormEffect(
-            dotHeight: 8,
-            dotWidth: 8,
-            dotColor: Colors.grey.shade300,
-            activeDotColor: Colors.green, // Active indicator color
+          // Dot Indicators below the banner
+          AnimatedSmoothIndicator(
+            activeIndex: _currentBannerIndex,
+            count: _bannerList.length,
+            effect: WormEffect(
+              dotHeight: 8,
+              dotWidth: 8,
+              dotColor: Colors.grey.shade300,
+              activeDotColor: Colors.green, // Active indicator color
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

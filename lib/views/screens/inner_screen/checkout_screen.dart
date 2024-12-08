@@ -1,10 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freshlink/models/provider/cart_provider.dart';
 import 'package:uuid/uuid.dart';
+
+import 'customerorder_screen.dart';
 
 class CheckoutScreen extends ConsumerStatefulWidget {
   const CheckoutScreen({super.key});
@@ -159,40 +160,34 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 try {
                   // For each product in the cart, create an order entry
                   for (var item in cartData.values) {
-                    double productTotal =
-                        item.price * item.productQuantity;
+                    double productTotal = item.price * item.productQuantity;
 
                     // Add each product's details to Firestore
-                    await _firestore
-                        .collection('orders')
-                        .doc(orderID)
-                        .set({
+                    await _firestore.collection('orders').doc(orderID).set({
                       'OrderID': orderID,
                       'productID': item.productId,
                       'productName': item.productName,
                       'productPrice': item.price,
                       'productQuantity': item.productQuantity,
                       'totalPrice': productTotal + shippingCharges,
+                      'image': item.imageUrl[0],
                       // Include shipping cost in total
-                      'status': 'Pending',
-                      // Default order status
+                      'status': 'Pending', // Default order status
                       'createdAt': FieldValue.serverTimestamp(),
-                      'FullName': (userDoc.data() as Map<String,
-                          dynamic>)['FullName'],
-                      'MobileNumber': (userDoc.data() as Map<
-                          String,
-                          dynamic>)['MobileNumber'],
-                      'Email': (userDoc.data() as Map<String,
-                          dynamic>)['email'],
-                      'buyerID': (userDoc.data() as Map<String,
-                          dynamic>)['buyerID'],
-                      'farmerID': item.farmerID
+                      'buyerId': _auth.currentUser!.uid,
+                      'fullName': (userDoc.data() as Map<String, dynamic>)['FullName'],
+                      'Email': (userDoc.data() as Map<String, dynamic>)['email'],
+                      'farmerID': item.farmerID,
+                      'accepted': false,
                     }).whenComplete(() {
                       setState(() {
                         _isLoading = false; // Hide loading indicator
                       });
                     });
                   }
+
+                  // Remove all items from the cart after placing the order
+                  cartNotifier.clearCart();
 
                   // Show success message with green background
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -201,15 +196,19 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                       backgroundColor: Colors.green, // Green color
                     ),
                   );
+
+                  // Navigate to the Customer Order Screen
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CustomerOrderScreen()),
+                  );
                 } catch (e) {
                   // Handle error if something goes wrong
                   setState(() {
                     _isLoading = false;
                   });
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content:
-                        Text("Failed to place order. Try again.")),
+                    const SnackBar(content: Text("Failed to place order. Try again.")),
                   );
                 }
               },
@@ -222,15 +221,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                 minimumSize: const Size(double.infinity, 50),
               ),
               child: _isLoading
-                  ? CircularProgressIndicator(
+                  ? const CircularProgressIndicator(
                 color: Colors.white,
               )
                   : const Text(
                 "Place Order",
-                style:
-                TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
+
           ],
         ),
       ),

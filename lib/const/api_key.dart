@@ -1,3 +1,5 @@
 
 
 String mapKey = "AIzaSyDWUBbIQGYSAIONdADPBRkYEE_WmNjgRJw";
+const String sk  =  "sk_test_51QTNwwE6LP0EGzPeuPjvsNiHOkMMCyHaTDxB2orSCMzkImZHsIHdSv4W4WSdDIcwK9coTkHctP5tAjMmmKDgz5VQ00ULDYnogV";
+const String pk = "pk_test_51QTNwwE6LP0EGzPeQCxQVtufj1nE0t8fkLwbUWfpRnNRVvEXBhH9P1S38MKpX0HvmWRK3tLngMux39wE0VFjno3m00xnu6WaMQ";
